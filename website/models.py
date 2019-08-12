@@ -12,4 +12,4 @@ class Website(models.Model):
     name=models.URLField()
     pages=models.ManyToManyField(Page)
     def __str__(self):
-        retunr self.name
+        return self.name
