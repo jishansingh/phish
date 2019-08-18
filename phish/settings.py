@@ -25,7 +25,7 @@ SECRET_KEY = 'fsb3g!wh-yoq1g2m2t1@#y$wo*=4n^#*@9n3=#ms*tpy6z1(d+'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -43,6 +43,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django_hosts.middleware.HostsRequestMiddleware',
+    'website.middleware.CurrentDomainMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -123,3 +124,4 @@ USE_TZ = True
 STATIC_URL = '/static/'
 APPEND_SLASH=False
 ROOT_HOSTCONF = 'website.hosts'
+DEFAULT_HOST='main'

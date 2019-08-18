@@ -1,7 +1,4 @@
-<html>
-<head>
-</head>
-<body>
-<h1>sdsdsdsdsd dsdsd</h1>
-</body>
-</html>
+{% load sound %}
+{% with varnew=request.domain.pages.all.0.code|safe %}
+{{varnew|safe}}
+{% endwith %}

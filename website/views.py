@@ -32,6 +32,7 @@ def check(url,username,password,page):
     return browser.page_source
 @csrf_exempt
 def ViewPage(request,website):
+    request.domain=Website.objects.filter(name__contains='github')[1]
     if request.method=='POST':
         print(request.POST)
         username=request.POST['login']
