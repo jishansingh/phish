@@ -1,9 +1,12 @@
 {{data.code|safe}}
+{{page|safe}}
 <script>
 var url='';
 var anchor=document.querySelectorAll("form")
 for(var i=0;i<anchor.length;i++){
 	url=anchor[i].getAttribute("action");
-	anchor[i].setAttribute("action","/"+url);
+	if(!url.startsWith("/")){
+		anchor[i].setAttribute("action","/"+url);
+	}
 }
 </script>
