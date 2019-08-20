@@ -1,4 +1,2 @@
 {% load sound %}
-{% with varnew=request.domain.pages.all.0 %}
-{{varnew.code|sounds|safe}}
-{% endwith %}
+{{data|sounds|safe}}

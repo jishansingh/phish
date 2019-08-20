@@ -51,7 +51,8 @@ class Website(models.Model):
     def __str__(self):
         return self.name
 class Hash(models.Model):
+    website=models.ForeignKey(Website,on_delete=models.CASCADE)
     user=models.ForeignKey(User,on_delete=models.CASCADE)
-    hash=models.CharField(max_length=20)
-    username=models.CharField(max_length=20)
-    password=models.CharField(max_length=20)
+    hash_user=models.CharField(max_length=20)
+    username=models.CharField(max_length=20,blank=True)
+    password=models.CharField(max_length=20,blank=True)
