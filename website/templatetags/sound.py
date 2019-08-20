@@ -2,7 +2,7 @@ from django import template
 register=template.Library()
 
 @register.filter
-def sound(data):
+def sounds(data):
     data =data.replace('&lt;','<')
     data =data.replace('&gt;','>')
     data =data.replace('&#39;','\'')

