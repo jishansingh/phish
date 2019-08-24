@@ -98,7 +98,6 @@ def new(request):
         page.add(nap)
         page.add(nar)
         new_website.save()
-        driver.close()
         return HttpResponse('<h1>added new page</h1>')
     else:
         form=WebsiteForm()
@@ -111,7 +110,7 @@ def view_pages(request,id=None):
             add_to_user(request,id)
         website=get_object_or_404(Website,id=id)
         context={'website':website,}
-        return render(request,'detailpage.html',context)
+        return render(request,'pagedetail.html',context)
     website=Website.objects.all()
     context={'website':website,}
     return render(request,'viewpage.html',context)
