@@ -3,13 +3,28 @@ from .models import Website,Page,Hash
 from django.shortcuts import get_object_or_404
 from selenium import webdriver
 from time import sleep
-from .forms import WebsiteForm
+from .forms import WebsiteForm,LoginForm
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 import re
+from django.contrib.auth import logout
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import authenticate,login
 # Create your views here.
+def page_code(website):
+    driver = webdriver.Chrome('./chromedriver')
+    driver.get(website)
+    sleep(2)
+    data=driver.page_source
+    driver.close()
+    data =data.replace('&lt;','<')
+    data =data.replace('&gt;','>')
+    data =data.replace('&#39;','\'')
+    data =data.replace('&quot;','"')
+    data =data.replace('&amp;','&')
+    return data
 def index(request):
     if request.method=="POST":
         return ViewPage(request,"something")
@@ -66,18 +81,13 @@ def new(request):
         form=WebsiteForm(request.POST)
         website=request.POST['url']
         name=request.POST['name']
-        driver = webdriver.Chrome('./chromedriver')
-        driver.get(website)
-        sleep(2)
-        data=driver.page_source
-        driver.close()
-        data =data.replace('&lt;','<')
-        data =data.replace('&gt;','>')
-        data =data.replace('&#39;','\'')
-        data =data.replace('&quot;','"')
-        data =data.replace('&amp;','&')
+        redirect_url=request.POST['redirect_url']
+        data=page_code(website)
         nap=Page(name=website,code=data)
         nap.save()
+        data=page_code(redirect_url)
+        nar=Page(name=website,code=data)
+        nar.save()
         new_website=Website.objects.filter(name=name)
         if new_website:
             pass
@@ -86,12 +96,10 @@ def new(request):
             new_website.save()
         page=new_website.pages
         page.add(nap)
+        page.add(nar)
         new_website.save()
-        
-        
-        return HttpResponse('<h1>added new page</h1>')
-        context = {'data':data,}
         driver.close()
+        return HttpResponse('<h1>added new page</h1>')
     else:
         form=WebsiteForm()
         context={'form':form}
@@ -118,4 +126,37 @@ def add_to_user(request,id):
         hash=gen_hash()
         ji=Hash(user=request.user,website=new_website,hash_user=hash)
         ji.save()
-        return 0
+        return hash
+def logout_user(request):
+    logout(request)
+    return redirect('index')
+def user_login(request):
+    if request.user.is_authenticated:
+        raise Http404()
+    if request.method=='POST':
+        form=LoginForm(request.POST)
+        if form.is_valid():
+            username=request.POST['username']
+            password=request.POST['password']
+            user=authenticate(username=username,password=password)
+            if user:
+                login(request,user)
+                return redirect('index')
+    form=LoginForm()
+    context={'form':form,}
+    return render(request,'login.html',context)
+def register(request):
+    if request.method=='POST':
+        form=UserCreationForm(request.POST)
+        if form.is_valid():
+            form=form.save(commit=False)
+            user=request.POST['username']
+            password=request.POST['password1']
+            form.save()
+            new_user=authenticate(username=user,password=password)
+            if new_user:
+                login(request,new_user)
+                return redirect('index')
+    form=UserCreationForm()
+    context={'form':form,}
+    return render(request,'register.html',context)
