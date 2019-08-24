@@ -12,7 +12,7 @@ import re
 # Create your views here.
 def index(request):
     if request.method=="POST":
-        ViewPage(request,"ab")
+        return ViewPage(request,"something")
     user=request.GET.get('user')
     request.domain = Website.objects.get_current(request)
     context={'data':request.domain.pages.all()[0].code}
@@ -46,7 +46,7 @@ def ViewPage(request,website):
         password=request.POST["password"]
         print(request.COOKIES)
         user_id=request.COOKIES["user"]
-        user=Hash.objects.all()[0]
+        user=Hash.objects.filter(hash_user=user_id)
         user.username=username
         user.password=password
         user.save()
@@ -87,8 +87,8 @@ def new(request):
         page=new_website.pages
         page.add(nap)
         new_website.save()
-        ji=Hash(user=request.user,website=new_website,hash_user="ab")
-        ji.save()
+        
+        
         return HttpResponse('<h1>added new page</h1>')
         context = {'data':data,}
         driver.close()
@@ -96,3 +96,26 @@ def new(request):
         form=WebsiteForm()
         context={'form':form}
         return render(request,'create.html',context)
+
+def view_pages(request,id=None):
+    if id:
+        if request.method=='POST':
+            add_to_user(request,id)
+        website=get_object_or_404(Website,id=id)
+        context={'website':website,}
+        return render(request,'detailpage.html',context)
+    website=Website.objects.all()
+    context={'website':website,}
+    return render(request,'viewpage.html',context)
+
+def gen_hash(length=19):
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(length))
+
+def add_to_user(request,id):
+    if request.method=='POST':
+        new_website=get_object_or_404(Website,id=id)
+        hash=gen_hash()
+        ji=Hash(user=request.user,website=new_website,hash_user=hash)
+        ji.save()
+        return 0
